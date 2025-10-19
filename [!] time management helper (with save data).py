@@ -1,5 +1,3 @@
-#this is my code.
-
 import pickle #file handling
 from datetime import datetime #assigns a date & time to save data
 
