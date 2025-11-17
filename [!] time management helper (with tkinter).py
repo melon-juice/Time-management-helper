@@ -45,7 +45,8 @@ class TimeManagementApp:
         self.master = root 
         self.master.title("⏰ Time Management Helper")
         
-        self.master.minsize(900, 500) 
+        self.master.minsize(500, 450)
+        self.master.geometry("1000x450")
         
         self.wants = initial_wants
         self.needs = initial_needs
@@ -53,19 +54,19 @@ class TimeManagementApp:
         self.task_tags = {} 
 
         self.create_widgets()
-        self.output_text.tag_config("completed", foreground="green")
+        self.output_text.tag_config("completed", foreground="green", font="{Yu Gothic} 11 bold")
         self.output_text.tag_config("heading_ul", underline=1)
         self.sort_and_display()
 
     def create_widgets(self):
         """Builds all the Tkinter widgets for the application."""
         
-        input_frame = tk.LabelFrame(self.master, text="➕ Add New Task", padx=10, pady=10)
+        input_frame = tk.LabelFrame(self.master, text="  Add New Task  ", padx=10, pady=10)
         input_frame.grid(row=0, column=0, padx=10, pady=10, sticky="new")
         
-        tk.Label(input_frame, text="Task Name:").grid(row=0, column=0, sticky="w", pady=2)
-        self.task_name_entry = tk.Entry(input_frame, width=45) 
-        self.task_name_entry.grid(row=0, column=1, padx=5, pady=2)
+        tk.Label(input_frame, text="Task Name:").grid(row=0, column=0, pady=2, sticky="w")
+        self.task_name_entry = tk.Entry(input_frame, width=25)
+        self.task_name_entry.grid(row=0, column=1, padx=5, pady=5)
         
         tk.Label(input_frame, text="Time (mins 1-300):").grid(row=1, column=0, sticky="w", pady=2)
         self.task_time_entry = tk.Entry(input_frame, width=10)
@@ -80,8 +81,8 @@ class TimeManagementApp:
         
         tk.Button(input_frame, text="Add Task", command=self.add_task, bg="light green").grid(row=4, column=0, columnspan=2, pady=10)
 
-        # Frame for Task Display (Unchanged)
-        display_frame = tk.LabelFrame(self.master, text="Task List (Enter ID to Complete/Delete)", padx=10, pady=10)
+        # Frame for Task Display
+        display_frame = tk.LabelFrame(self.master, text="  Task List  ", padx=10, pady=10)
         display_frame.grid(row=0, column=1, rowspan=2, padx=10, pady=10, sticky="nsew")
         
         self.output_text = tk.Text(display_frame, width=80, height=20, wrap=tk.WORD) 
@@ -89,23 +90,27 @@ class TimeManagementApp:
         self.output_text.config(state=tk.DISABLED) 
         
         # Frame for Control Buttons and Completion
-        control_frame = tk.LabelFrame(self.master, text="Controls & Complete", padx=10, pady=10)
+        control_frame = tk.LabelFrame(self.master, text="  Controls  ", padx=10, pady=10)
         control_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
         
         # Completion Input and Button
-        tk.Label(control_frame, text="Complete ID:").grid(row=0, column=0, sticky="w", pady=5, padx=5)
-        self.completion_id_entry = tk.Entry(control_frame, width=5)
+        tk.Label(control_frame, text="Compeled Task ID:").grid(row=0, column=0, sticky="w", pady=5, padx=5)
+        self.completion_id_entry = tk.Entry(control_frame, width=8)
         self.completion_id_entry.grid(row=0, column=1, sticky="w", pady=5, padx=5)
         
         self.completion_id_entry.bind('<Return>', lambda event: self.complete_task())
-        tk.Button(control_frame, text="Delete/Complete Task", command=self.complete_task, width=20, bg="#FFD700").grid(row=0, column=2, padx=5, pady=5) 
+        tk.Button(control_frame, text="Tick off!", command=self.complete_task, width=20, bg="#FFD700").grid(row=0, column=2, padx=15, pady=5, sticky="e")
+        control_frame.grid_columnconfigure(2, weight=1)
+
+        separator = tk.Frame(control_frame, height=2, bd=1, relief=tk.SUNKEN, bg="light grey")
+        separator.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(10, 5))
         
         # Save/Import Buttons
-        tk.Button(control_frame, text="Save Data", command=self.save_current_data, width=15, bg="sky blue").grid(row=1, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Sort/Display", command=self.sort_and_display, width=15, bg="yellow").grid(row=1, column=1, padx=5, pady=5)
+        tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="sky blue").grid(row=2, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Sort & Display", command=self.sort_and_display, width=15, bg="yellow").grid(row=2, column=1, padx=5, pady=5)
         
-        tk.Button(control_frame, text="Import Saved Data", command=self.import_data_manually, width=15, bg="#DDA0DD").grid(row=2, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Exit App", command=self.master.quit, width=15, bg="salmon").grid(row=2, column=1, padx=5, pady=5)
+        tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20, bg="#DDA0DD").grid(row=3, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Exit App", command=self.master.quit, width=15, bg="salmon").grid(row=3, column=1, padx=5, pady=5)
         
     def _perform_task_removal(self, task_to_remove):
         """Internal helper to remove the task from the main lists."""
@@ -144,14 +149,16 @@ class TimeManagementApp:
             task_to_remove = self.current_tasks[task_id - 1]
             task_tag = f"task_{task_id}" 
 
-            # 1. Apply the red color tag
+            # Apply the color tag
             self.output_text.config(state=tk.NORMAL)
+            insert_index = f"task_{task_id}.first"
+            self.output_text.insert(insert_index, "✅ ")
             # Tag the entire line based on the unique tag index
             self.output_text.tag_add("completed", f"task_{task_id}.first", f"task_{task_id}.last") 
             self.output_text.config(state=tk.DISABLED)
 
-            # 2. Schedule the actual removal and list refresh after 500 milliseconds (0.5s)
-            self.master.after(500, lambda: self._perform_task_removal(task_to_remove))
+            # Schedule the actual removal and list refresh after 1 second (1000 milliseconds)
+            self.master.after(1000, lambda: self._perform_task_removal(task_to_remove))
         else:
             messagebox.showerror("Error", f"ID {task_id} is out of range. Please enter an ID from 1 to {len(self.current_tasks)}.")
             
@@ -159,7 +166,7 @@ class TimeManagementApp:
         """Allows manual import via button click, overwriting current lists."""
         response = messagebox.askyesno(
             "Manual Import",
-            "This action will **REPLACE** all currently added tasks with the saved data.\nDo you want to proceed?"
+            "This action will REPLACE all currently added tasks with the saved data.\nDo you want to proceed?"
         )
         if response:
             wants, needs, message = get_save_data()
@@ -277,11 +284,13 @@ if __name__ == "__main__":
         initial_needs = []
         
         root = tk.Tk()
-        root.option_add("*Font", "{Bahnschrift SemiLight} 10")
+        root.option_add("*Font", "{Bahnschrift SemiLight} 12")
         app = TimeManagementApp(root, initial_wants, initial_needs) 
         
-        root.grid_columnconfigure(1, weight=1) 
+        root.grid_columnconfigure(0, weight=1)
+        root.grid_columnconfigure(1, weight=1)
         root.grid_rowconfigure(0, weight=1)
+
         
         root.mainloop()
         
