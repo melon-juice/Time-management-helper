@@ -57,6 +57,24 @@ class TimeManagementApp:
         self.output_text.tag_config("heading_ul", underline=1)
         self.sort_and_display()
 
+    def exit_application(self):
+        """Ensures the application closes cleanly."""
+        
+        # Optionally, ask the user if they want to save before closing
+        response = messagebox.askyesnocancel(
+            "Exit App", 
+            "Do you want to save your current task list before exiting?"
+        )
+        
+        if response is True:
+            # User chose 'Yes' (save)
+            self.save_current_data()
+            self.master.destroy() 
+        elif response is False:
+            # User chose 'No' (don't save)
+            self.master.destroy() 
+        # If response is None (Cancel), the window stays open
+        
     def create_widgets(self):
         """Builds all the Tkinter widgets for the application."""
         
@@ -78,7 +96,7 @@ class TimeManagementApp:
         tk.Radiobutton(input_frame, text="Need to do", variable=self.type_var, value="need").grid(row=3, column=0, sticky="w")
         tk.Radiobutton(input_frame, text="Want to do", variable=self.type_var, value="want").grid(row=3, column=1, sticky="w")
         
-        tk.Button(input_frame, text="Add Task", command=self.add_task, bg="#98FB98").grid(row=4, column=0, columnspan=2, pady=10)
+        tk.Button(input_frame, text="Add Task", command=self.add_task, bg="#55917F",fg="white").grid(row=4, column=0, columnspan=2, pady=10)
 
         # Frame for Task Display
         display_frame = tk.LabelFrame(self.master, text="  Task List  ", padx=10, pady=10)
@@ -117,11 +135,11 @@ class TimeManagementApp:
         separator = tk.Frame(control_frame, height=2, bd=1, relief=tk.SUNKEN, bg="light grey")
         separator.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(10, 5))
         
-        tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="#66CDAA").grid(row=3, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Clear Tasks", command=self.clear_all_data, width=15, bg="#FA8072").grid(row=3, column=1, padx=5, pady=5)
-        tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20, bg="#E6E6FA").grid(row=4, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Exit App", command=self.master.quit, width=15, bg="#FA8072").grid(row=4, column=1, padx=5, pady=5)
-        
+        tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="#87DBEE", fg="black").grid(row=3, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Clear Tasks", command=self.clear_all_data, width=15, bg="#EB084C", fg="white").grid(row=3, column=1, padx=5, pady=5)
+        tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20,bg="#A4A1F5", fg="black").grid(row=4, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Exit App", command=self.exit_application, width=15, bg="#FA8072").grid(row=4, column=1, padx=5, pady=5)
+
     def clear_all_data(self):
         """Clears all tasks (wants and needs) from the current session."""
         
