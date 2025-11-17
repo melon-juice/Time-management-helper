@@ -38,21 +38,20 @@ def save_data(wants, needs):
         return "ERROR: Could not save data to file."
 
 
-# Tkinter GUI Class (Modification in sort_and_display)
-
+# Tkinter GUI Class
 class TimeManagementApp:
     def __init__(self, root, initial_wants, initial_needs):
-        self.master = root 
+        self.master = root
         self.master.title("⏰ Time Management Helper")
         
-        self.master.minsize(500, 450)
-        self.master.geometry("1000x450")
+        self.master.minsize(700, 500)
+        self.master.geometry("1100x500")
         
         self.wants = initial_wants
         self.needs = initial_needs
-        self.current_tasks = [] 
-        self.task_tags = {} 
-
+        self.current_tasks = []
+        self.task_tags = {}
+        
         self.create_widgets()
         self.output_text.tag_config("completed", foreground="green", font="{Yu Gothic} 11 bold")
         self.output_text.tag_config("heading_ul", underline=1)
@@ -75,59 +74,177 @@ class TimeManagementApp:
         self.priority_var = tk.BooleanVar()
         tk.Checkbutton(input_frame, text="High Priority (!)", variable=self.priority_var).grid(row=2, column=0, sticky="w", pady=5)
         
-        self.type_var = tk.StringVar(value="need") 
+        self.type_var = tk.StringVar(value="need")
         tk.Radiobutton(input_frame, text="Need to do", variable=self.type_var, value="need").grid(row=3, column=0, sticky="w")
         tk.Radiobutton(input_frame, text="Want to do", variable=self.type_var, value="want").grid(row=3, column=1, sticky="w")
         
-        tk.Button(input_frame, text="Add Task", command=self.add_task, bg="light green").grid(row=4, column=0, columnspan=2, pady=10)
+        tk.Button(input_frame, text="Add Task", command=self.add_task, bg="#98FB98").grid(row=4, column=0, columnspan=2, pady=10)
 
         # Frame for Task Display
         display_frame = tk.LabelFrame(self.master, text="  Task List  ", padx=10, pady=10)
         display_frame.grid(row=0, column=1, rowspan=2, padx=10, pady=10, sticky="nsew")
         
-        self.output_text = tk.Text(display_frame, width=80, height=20, wrap=tk.WORD) 
-        self.output_text.pack(padx=5, pady=5, fill=tk.BOTH, expand=True) 
-        self.output_text.config(state=tk.DISABLED) 
+        self.output_text = tk.Text(display_frame, width=65, height=20, wrap=tk.WORD)
+        self.output_text.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
+        self.output_text.config(state=tk.DISABLED)
         
         # Frame for Control Buttons and Completion
         control_frame = tk.LabelFrame(self.master, text="  Controls  ", padx=10, pady=10)
         control_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
         
         # Completion Input and Button
-        tk.Label(control_frame, text="Compeled Task ID:").grid(row=0, column=0, sticky="w", pady=5, padx=5)
+        tk.Label(control_frame, text="Completed Task ID:").grid(row=0, column=0, sticky="w", pady=5, padx=5)
         self.completion_id_entry = tk.Entry(control_frame, width=8)
         self.completion_id_entry.grid(row=0, column=1, sticky="w", pady=5, padx=5)
-        
         self.completion_id_entry.bind('<Return>', lambda event: self.complete_task())
-        tk.Button(control_frame, text="Tick off!", command=self.complete_task, width=20, bg="#FFD700").grid(row=0, column=2, padx=15, pady=5, sticky="e")
+        
+        # Harmonized Color: Gold
+        tk.Button(control_frame, text="Tick off!", command=self.complete_task, width=15, bg="#FFD700").grid(row=0, column=2, padx=15, pady=5, sticky="e")
         control_frame.grid_columnconfigure(2, weight=1)
 
+        # Edit Task Input and Button (New Feature)
+        tk.Label(control_frame, text="Edit Task ID:").grid(row=1, column=0, sticky="w", pady=5, padx=5)
+        self.edit_id_entry = tk.Entry(control_frame, width=8)
+        self.edit_id_entry.grid(row=1, column=1, sticky="w", pady=5, padx=5)
+        self.edit_id_entry.bind('<Return>', lambda event: self.edit_task())
+        
+        tk.Button(control_frame, text="Edit Task", command=self.edit_task, width=15, bg="#B0C4DE").grid(row=1, column=2, padx=15, pady=5, sticky="e")
+
         separator = tk.Frame(control_frame, height=2, bd=1, relief=tk.SUNKEN, bg="light grey")
-        separator.grid(row=1, column=0, columnspan=3, sticky="ew", pady=(10, 5))
+        separator.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(10, 5))
         
-        # Save/Import Buttons
-        tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="sky blue").grid(row=2, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Sort & Display", command=self.sort_and_display, width=15, bg="yellow").grid(row=2, column=1, padx=5, pady=5)
-        
-        tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20, bg="#DDA0DD").grid(row=3, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Exit App", command=self.master.quit, width=15, bg="salmon").grid(row=3, column=1, padx=5, pady=5)
+        tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="#66CDAA").grid(row=3, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Sort & Display", command=self.sort_and_display, width=15, bg="#AFEEEE").grid(row=3, column=1, padx=5, pady=5)
+        tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20, bg="#E6E6FA").grid(row=4, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Exit App", command=self.master.quit, width=15, bg="#FA8072").grid(row=4, column=1, padx=5, pady=5)
         
     def _perform_task_removal(self, task_to_remove):
         """Internal helper to remove the task from the main lists."""
         task_name = task_to_remove['name']
         task_type = task_to_remove['type']
-
+        
         def is_match(t, target):
             return (t['name'] == target['name'] and 
                     t['time'] == target['time'] and 
                     t['priority'] == target['priority'])
 
-        if task_type == 'need':
-            self.needs[:] = [t for i, t in enumerate(self.needs) if i != next((j for j, item in enumerate(self.needs) if is_match(item, task_to_remove)), -1)]
-        elif task_type == 'want':
-            self.wants[:] = [t for i, t in enumerate(self.wants) if i != next((j for j, item in enumerate(self.wants) if is_match(item, task_to_remove)), -1)]
+        # Find the index of the first matching task
+        target_list = self.needs if task_type == 'need' else self.wants
+        try:
+            index_to_remove = next(i for i, item in enumerate(target_list) if is_match(item, task_to_remove))
+            del target_list[index_to_remove]
+        except StopIteration:
+            # Should not happen if called correctly, but handles case where task is missing
+            pass
         
         self.sort_and_display()
+
+    def edit_task(self):
+        """Prepares to edit a task based on its ID."""
+        task_id_str = self.edit_id_entry.get().strip()
+        self.edit_id_entry.delete(0, tk.END)
+
+        if not self.current_tasks:
+            messagebox.showinfo("Error", "The task list is empty. Nothing to edit.")
+            return
+
+        try:
+            task_id = int(task_id_str)
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid number for the Task ID to edit.")
+            return
+
+        if 1 <= task_id <= len(self.current_tasks):
+            task_to_edit = self.current_tasks[task_id - 1]
+            # Open the edit pop-up window
+            self._open_edit_window(task_to_edit, task_id)
+        else:
+            messagebox.showerror("Error", f"ID {task_id} is out of range. Please enter an ID from 1 to {len(self.current_tasks)}.")
+    
+    def _open_edit_window(self, task, original_id):
+        """Creates a new window for editing a task."""
+        edit_window = tk.Toplevel(self.master)
+        edit_window.title(f"Edit Task {original_id}")
+        edit_window.grab_set() # Modal window
+        edit_window.transient(self.master)
+
+        edit_frame = tk.LabelFrame(edit_window, text=f"Edit Task: {task['name']}", padx=10, pady=10)
+        edit_frame.pack(padx=20, pady=20)
+
+        # Name
+        tk.Label(edit_frame, text="Task Name:").grid(row=0, column=0, pady=2, sticky="ew")
+        edit_name_var = tk.StringVar(value=task['name'])
+        tk.Entry(edit_frame, width=25, textvariable=edit_name_var).grid(row=0, column=1, padx=5, pady=5)
+        
+        # Time
+        tk.Label(edit_frame, text="Time (mins 1-300):").grid(row=1, column=0, sticky="w", pady=2)
+        edit_time_var = tk.StringVar(value=str(task['time']))
+        tk.Entry(edit_frame, width=10, textvariable=edit_time_var).grid(row=1, column=1, sticky="w", padx=5, pady=2)
+        
+        # Priority
+        edit_priority_var = tk.BooleanVar(value=task['priority'])
+        tk.Checkbutton(edit_frame, text="High Priority (!)", variable=edit_priority_var).grid(row=2, column=0, sticky="w", pady=5)
+        
+        # Type (Need/Want)
+        edit_type_var = tk.StringVar(value=task['type'])
+        tk.Radiobutton(edit_frame, text="Need to do", variable=edit_type_var, value="need").grid(row=3, column=0, sticky="w")
+        tk.Radiobutton(edit_frame, text="Want to do", variable=edit_type_var, value="want").grid(row=3, column=1, sticky="w")
+        
+        # Save Button
+        tk.Button(edit_frame, text="Save Changes", bg="#98FB98", 
+                  command=lambda: self._save_edited_task(original_id, edit_name_var.get(), 
+                                                        edit_time_var.get(), edit_priority_var.get(), 
+                                                        edit_type_var.get(), edit_window)).grid(row=4, column=0, columnspan=2, pady=10)
+        
+    def _save_edited_task(self, original_id, new_name, new_time_str, new_priority, new_type, edit_window):
+        """Validates and saves the edited task."""
+        new_name = new_name.strip().title()
+        
+        if not new_name:
+            messagebox.showerror("Input Error", "Please enter a Task Name.", parent=edit_window)
+            return
+        
+        try:
+            new_time = int(new_time_str)
+            if not 1 <= new_time <= 300:
+                raise ValueError
+        except ValueError:
+            messagebox.showerror("Input Error", "Please enter a whole number between 1 and 300 for Time (minutes).", parent=edit_window)
+            return
+
+        # 1. Remove the original task from its list using its data from current_tasks
+        old_task_data = self.current_tasks[original_id - 1]
+        
+        # Determine the correct list and index to remove from self.needs or self.wants
+        target_list = self.needs if old_task_data['type'] == 'need' else self.wants
+        
+        def is_match(t, target):
+            return (t['name'] == target['name'] and 
+                    t['time'] == target['time'] and 
+                    t['priority'] == target['priority'])
+            
+        try:
+            index_to_remove = next(i for i, item in enumerate(target_list) if is_match(item, old_task_data))
+            del target_list[index_to_remove]
+        except StopIteration:
+            messagebox.showwarning("Warning", "Original task could not be found for removal.", parent=edit_window)
+            
+        # 2. Create and add the new/edited task
+        new_task = {
+            "time": new_time,
+            "priority": new_priority,
+            "name": new_name
+        }
+
+        if new_type == "need":
+            self.needs.append(new_task)
+        else:
+            self.wants.append(new_task)
+
+        # 3. Close window and refresh
+        edit_window.destroy()
+        self.sort_and_display()
+        messagebox.showinfo("Success", f"Task {original_id} successfully updated.")
 
     def complete_task(self):
         """Marks a task for animation, then schedules its removal."""
@@ -147,14 +264,13 @@ class TimeManagementApp:
 
         if 1 <= task_id <= len(self.current_tasks):
             task_to_remove = self.current_tasks[task_id - 1]
-            task_tag = f"task_{task_id}" 
-
-            # Apply the color tag
+            
+            # Apply the color tag for the visual confirmation
             self.output_text.config(state=tk.NORMAL)
             insert_index = f"task_{task_id}.first"
             self.output_text.insert(insert_index, "✅ ")
             # Tag the entire line based on the unique tag index
-            self.output_text.tag_add("completed", f"task_{task_id}.first", f"task_{task_id}.last") 
+            self.output_text.tag_add("completed", f"task_{task_id}.first", f"task_{task_id}.last")
             self.output_text.config(state=tk.DISABLED)
 
             # Schedule the actual removal and list refresh after 1 second (1000 milliseconds)
@@ -218,7 +334,7 @@ class TimeManagementApp:
     def sort_and_display(self):
         """Calculates scores, sorts the lists, and updates the display area, hiding the score."""
         
-        self.current_tasks = [] 
+        self.current_tasks = []
         task_id = 1
         
         self.output_text.config(state=tk.NORMAL)
@@ -236,6 +352,7 @@ class TimeManagementApp:
             
             self.output_text.insert(tk.END, line, f"task_{task_id}")
             
+            # Store full task details for removal/editing
             self.current_tasks.append({'name': task['name'], 'time': task['time'], 'priority': task['priority'], 'type': 'need'})
             task_id += 1
         if not self.needs:
@@ -254,6 +371,7 @@ class TimeManagementApp:
             
             self.output_text.insert(tk.END, line, f"task_{task_id}")
             
+            # Store full task details for removal/editing
             self.current_tasks.append({'name': task['name'], 'time': task['time'], 'priority': task['priority'], 'type': 'want'})
             task_id += 1
         if not self.wants:
@@ -266,7 +384,7 @@ class TimeManagementApp:
         """Handles the save button click."""
         
         response = messagebox.askyesno(
-            "Confirm Save", 
+            "Confirm Save",
             "WARNING: This will overwrite your previous save data.\nAre you sure you want to save the current task list?"
         )
         if response:
@@ -280,12 +398,14 @@ class TimeManagementApp:
 # Driver Code
 if __name__ == "__main__":
     try:
+        # Attempt to load data on startup (uncomment to enable auto-load)
+        # initial_wants, initial_needs, _ = get_save_data() 
         initial_wants = []
         initial_needs = []
         
         root = tk.Tk()
         root.option_add("*Font", "{Bahnschrift SemiLight} 12")
-        app = TimeManagementApp(root, initial_wants, initial_needs) 
+        app = TimeManagementApp(root, initial_wants, initial_needs)
         
         root.grid_columnconfigure(0, weight=1)
         root.grid_columnconfigure(1, weight=1)
