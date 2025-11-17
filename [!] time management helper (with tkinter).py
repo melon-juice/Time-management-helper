@@ -97,12 +97,11 @@ class TimeManagementApp:
         self.completion_id_entry = tk.Entry(control_frame, width=8)
         self.completion_id_entry.grid(row=0, column=1, sticky="w", pady=5, padx=5)
         self.completion_id_entry.bind('<Return>', lambda event: self.complete_task())
-        
-        # Harmonized Color: Gold
+
         tk.Button(control_frame, text="Tick off!", command=self.complete_task, width=15, bg="#FFD700").grid(row=0, column=2, padx=15, pady=5, sticky="e")
         control_frame.grid_columnconfigure(2, weight=1)
 
-        # Edit Task Input and Button (New Feature)
+        # Edit Task Input and Button
         tk.Label(control_frame, text="Edit Task ID:").grid(row=1, column=0, sticky="w", pady=5, padx=5)
         self.edit_id_entry = tk.Entry(control_frame, width=8)
         self.edit_id_entry.grid(row=1, column=1, sticky="w", pady=5, padx=5)
@@ -114,10 +113,28 @@ class TimeManagementApp:
         separator.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(10, 5))
         
         tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="#66CDAA").grid(row=3, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Sort & Display", command=self.sort_and_display, width=15, bg="#AFEEEE").grid(row=3, column=1, padx=5, pady=5)
+        tk.Button(control_frame, text="Clear Tasks", command=self.clear_all_data, width=15, bg="#FA8072").grid(row=3, column=1, padx=5, pady=5)
         tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20, bg="#E6E6FA").grid(row=4, column=0, padx=5, pady=5)
         tk.Button(control_frame, text="Exit App", command=self.master.quit, width=15, bg="#FA8072").grid(row=4, column=1, padx=5, pady=5)
         
+    def clear_all_data(self):
+        """Clears all tasks (wants and needs) from the current session."""
+        
+        if not (self.wants or self.needs):
+            messagebox.showinfo("Info", "The task lists are already empty.")
+            return
+            
+        response = messagebox.askyesno(
+            "Confirm Clear",
+            "WARNING: This will DELETE all tasks within the task window\n(You may want to save before proceeding!)\nDo you want to proceed?"
+        )
+        
+        if response:
+            self.wants.clear()
+            self.needs.clear()
+            self.sort_and_display()
+            messagebox.showinfo("Success", "Task window cleared.")
+            
     def _perform_task_removal(self, task_to_remove):
         """Internal helper to remove the task from the main lists."""
         task_name = task_to_remove['name']
