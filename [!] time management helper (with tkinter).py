@@ -44,8 +44,8 @@ class TimeManagementApp:
         self.master = root
         self.master.title("⏰ Time Management Helper")
         
-        self.master.minsize(700, 500)
-        self.master.geometry("1100x500")
+        self.master.minsize(900, 500)
+        self.master.geometry("1200x500")
         
         self.wants = initial_wants
         self.needs = initial_needs
@@ -88,6 +88,11 @@ class TimeManagementApp:
         self.output_text.pack(padx=5, pady=5, fill=tk.BOTH, expand=True)
         self.output_text.config(state=tk.DISABLED)
         
+        # ADDED: Time Summary Label
+        self.time_summary_label = tk.Label(display_frame, text="Estimated Time: 0 mins", anchor="w", font="{Bahnschrift SemiLight} 10")
+        self.time_summary_label.pack(pady=(5, 0), fill=tk.X)
+
+
         # Frame for Control Buttons and Completion
         control_frame = tk.LabelFrame(self.master, text="  Controls  ", padx=10, pady=10)
         control_frame.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
@@ -349,10 +354,12 @@ class TimeManagementApp:
         self.sort_and_display()
 
     def sort_and_display(self):
-        """Calculates scores, sorts the lists, and updates the display area, hiding the score."""
+        """Calculates scores, sorts the lists, updates the display area, and updates the time summary."""
         
         self.current_tasks = []
         task_id = 1
+        total_need_time = 0
+        total_want_time = 0
         
         self.output_text.config(state=tk.NORMAL)
         self.output_text.delete('1.0', tk.END)
@@ -360,6 +367,7 @@ class TimeManagementApp:
         # NEEDS list processing
         for task in self.needs:
             task["score"] = priority_score(task)
+            total_need_time += task['time']
         self.needs.sort(key=lambda task: task["score"], reverse=True)
         
         self.output_text.insert(tk.END, "You need to do:\n","heading_ul")
@@ -379,6 +387,7 @@ class TimeManagementApp:
         # WANTS list processing
         for task in self.wants:
             task["score"] = priority_score(task)
+            total_want_time += task['time']
         self.wants.sort(key=lambda task: task["score"], reverse=True)
         
         self.output_text.insert(tk.END, "\nYou want to do:\n","heading_ul")
@@ -396,6 +405,32 @@ class TimeManagementApp:
 
         # Update display
         self.output_text.config(state=tk.DISABLED)
+        
+        total_time_mins = total_need_time + total_want_time
+        
+        def convert_minutes_to_h_m(total_minutes):
+            """Converts total minutes into a string format: X hours Y minutes."""
+            if total_minutes < 60:
+                return f"{total_minutes} mins"
+            
+            hours = total_minutes // 60
+            minutes = total_minutes % 60
+            
+            h_label = "hour" if hours == 1 else "hours"
+            m_label = "min" if minutes == 1 else "mins"
+            
+            if minutes == 0:
+                return f"{hours} {h_label}"
+            else:
+                return f"{hours} {h_label}, {minutes} {m_label}"
+
+        total_time_h_m = convert_minutes_to_h_m(total_time_mins)
+        need_time_h_m = convert_minutes_to_h_m(total_need_time)
+        want_time_h_m = convert_minutes_to_h_m(total_want_time)
+        
+        summary_text = f"Estimated Time: Needs: {need_time_h_m} | Wants: {want_time_h_m} | Total: {total_time_h_m}"
+        self.time_summary_label.config(text=summary_text)
+
 
     def save_current_data(self):
         """Handles the save button click."""
@@ -415,8 +450,6 @@ class TimeManagementApp:
 # Driver Code
 if __name__ == "__main__":
     try:
-        # Attempt to load data on startup (uncomment to enable auto-load)
-        # initial_wants, initial_needs, _ = get_save_data() 
         initial_wants = []
         initial_needs = []
         
