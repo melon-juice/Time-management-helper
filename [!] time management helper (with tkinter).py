@@ -16,13 +16,17 @@ def get_save_data():
     try:
         with open("ProductivitySaveData.pkl", "rb") as file:
             imported_data = pickle.load(file)
-        if not imported_data:
-            return [], [], "No recovery data found."
-        return imported_data["wants_list"], imported_data["needs_list"], f"Data found from {imported_data['date']}"
-    except FileNotFoundError:
-        return [], [], "Save file not found."
-    except Exception:
-        return [], [], "Save data file is corrupted."
+            
+        if not imported_data: #"No recovery data found."
+            return [], [], []
+
+        return imported_data["wants_list"], imported_data["needs_list"], imported_data['date']
+
+    except FileNotFoundError: #"Save file not found."
+        return [], [], []
+    
+    except Exception: #"Save data file is corrupted."
+        return [], [], []
 
 def save_data(wants, needs):
     """Saves the current wants and needs lists to a pickle file."""
@@ -42,7 +46,7 @@ def save_data(wants, needs):
 class TimeManagementApp:
     def __init__(self, root, initial_wants, initial_needs):
         self.master = root
-        self.master.title("⏰ Time Management Helper")
+        self.master.title("Time Management Helper")
         
         self.master.minsize(900, 500)
         self.master.geometry("1200x500")
@@ -76,7 +80,7 @@ class TimeManagementApp:
         # If response is None (Cancel), the window stays open
         
     def create_widgets(self):
-        """Builds all the Tkinter widgets for the application."""
+        """Tkinter GUI used for the application"""
         
         input_frame = tk.LabelFrame(self.master, text="  Add New Task  ", padx=10, pady=10)
         input_frame.grid(row=0, column=0, padx=10, pady=10, sticky="new")
@@ -96,7 +100,7 @@ class TimeManagementApp:
         tk.Radiobutton(input_frame, text="Need to do", variable=self.type_var, value="need").grid(row=3, column=0, sticky="w")
         tk.Radiobutton(input_frame, text="Want to do", variable=self.type_var, value="want").grid(row=3, column=1, sticky="w")
         
-        tk.Button(input_frame, text="Add Task", command=self.add_task, bg="#55917F",fg="white").grid(row=4, column=0, columnspan=2, pady=10)
+        tk.Button(input_frame, text="Add Task", command=self.add_task, bg="#0C8F96",fg="white").grid(row=4, column=0, columnspan=2, pady=10)
 
         # Frame for Task Display
         display_frame = tk.LabelFrame(self.master, text="  Task List  ", padx=10, pady=10)
@@ -109,7 +113,7 @@ class TimeManagementApp:
         # ADDED: Time Summary Label
         self.time_summary_label = tk.Label(display_frame, text="Estimated Time: 0 mins", anchor="w", font="{Bahnschrift SemiLight} 10")
         self.time_summary_label.pack(pady=(5, 0), fill=tk.X)
-
+    
 
         # Frame for Control Buttons and Completion
         control_frame = tk.LabelFrame(self.master, text="  Controls  ", padx=10, pady=10)
@@ -121,7 +125,7 @@ class TimeManagementApp:
         self.completion_id_entry.grid(row=0, column=1, sticky="w", pady=5, padx=5)
         self.completion_id_entry.bind('<Return>', lambda event: self.complete_task())
 
-        tk.Button(control_frame, text="Tick off!", command=self.complete_task, width=15, bg="#FFD700").grid(row=0, column=2, padx=15, pady=5, sticky="e")
+        tk.Button(control_frame, text="Tick off!", command=self.complete_task, width=15, bg="#354871", fg="white").grid(row=0, column=2, padx=15, pady=5, sticky="e")
         control_frame.grid_columnconfigure(2, weight=1)
 
         # Edit Task Input and Button
@@ -135,9 +139,9 @@ class TimeManagementApp:
         separator = tk.Frame(control_frame, height=2, bd=1, relief=tk.SUNKEN, bg="light grey")
         separator.grid(row=2, column=0, columnspan=3, sticky="ew", pady=(10, 5))
         
-        tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="#87DBEE", fg="black").grid(row=3, column=0, padx=5, pady=5)
-        tk.Button(control_frame, text="Clear Tasks", command=self.clear_all_data, width=15, bg="#EB084C", fg="white").grid(row=3, column=1, padx=5, pady=5)
-        tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20,bg="#A4A1F5", fg="black").grid(row=4, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Save Current Data", command=self.save_current_data, width=20, bg="#7D3096", fg="white").grid(row=3, column=0, padx=5, pady=5)
+        tk.Button(control_frame, text="Clear Tasks", command=self.clear_all_data, width=15, bg="#AA1730", fg="white").grid(row=3, column=1, padx=5, pady=5)
+        tk.Button(control_frame, text="Import Previous Data", command=self.import_data_manually, width=20,bg="#E488DF", fg="black").grid(row=4, column=0, padx=5, pady=5)
         tk.Button(control_frame, text="Exit App", command=self.exit_application, width=15, bg="#FA8072").grid(row=4, column=1, padx=5, pady=5)
 
     def clear_all_data(self):
@@ -238,8 +242,8 @@ class TimeManagementApp:
         
     def _save_edited_task(self, original_id, new_name, new_time_str, new_priority, new_type, edit_window):
         """Validates and saves the edited task."""
-        new_name = new_name.strip().title()
-        
+
+        new_name = new_name.strip()
         if not new_name:
             messagebox.showerror("Input Error", "Please enter a Task Name.", parent=edit_window)
             return
@@ -319,21 +323,30 @@ class TimeManagementApp:
             messagebox.showerror("Error", f"ID {task_id} is out of range. Please enter an ID from 1 to {len(self.current_tasks)}.")
             
     def import_data_manually(self):
-        """Allows manual import via button click, overwriting current lists."""
-        response = messagebox.askyesno(
-            "Manual Import",
-            "This action will REPLACE all currently added tasks with the saved data.\nDo you want to proceed?"
-        )
-        if response:
-            wants, needs, message = get_save_data()
-            if message.startswith("Data found"):
-                self.wants = wants
-                self.needs = needs
-                self.sort_and_display()
-                messagebox.showinfo("Import Success", f"Successfully imported data. {message}")
-            else:
-                messagebox.showerror("Import Failed", f"Could not import data. {message}")
+        """Allows user to import previous save data, overwriting current lists."""
+        wants, needs, date = get_save_data()
 
+        if self.wants==wants and self.needs==needs:
+            response = messagebox.showinfo(
+            "Importing Save Data",
+            f"Import Unecessary.\nThe save data (from:{date}) is identical to your current tasks.")
+
+        else:
+
+            if date:
+                response = messagebox.askyesno(
+                "Importing Save Data",
+                f"Data found from {date}.\nDo you want to proceed?\n\nWarning: this will replace currently added tasks.")
+                                
+                if response:
+                    self.wants=wants
+                    self.needs=needs
+                    self.sort_and_display()
+                    #messagebox.showinfo("Import Success","Successfully imported data.")
+            else:
+                messagebox.showerror("Import Failed.","Could not import data.")
+
+        
     def add_task(self):
         """Validates input, creates a task dictionary, and adds it to the list."""
         
