@@ -62,22 +62,21 @@ class TimeManagementApp:
         self.sort_and_display()
 
     def exit_application(self):
-        """Ensures the application closes cleanly."""
+        """Asks the user if they want to save before closing."""
         
-        # Optionally, ask the user if they want to save before closing
         response = messagebox.askyesnocancel(
             "Exit App", 
             "Do you want to save your current task list before exiting?"
         )
         
         if response is True:
-            # User chose 'Yes' (save)
+            #User chose 'Yes' (save)
             self.save_current_data()
             self.master.destroy() 
         elif response is False:
-            # User chose 'No' (don't save)
+            #User chose 'No' (don't save)
             self.master.destroy() 
-        # If response is None (Cancel), the window stays open
+        #If response is None (Cancel), the window stays open
         
     def create_widgets(self):
         """Tkinter GUI used for the application"""
@@ -89,12 +88,12 @@ class TimeManagementApp:
         self.task_name_entry = tk.Entry(input_frame, width=25)
         self.task_name_entry.grid(row=0, column=1, padx=5, pady=5)
         
-        tk.Label(input_frame, text="Time (mins 1-300):").grid(row=1, column=0, sticky="w", pady=2)
+        tk.Label(input_frame, text="Time (mins):").grid(row=1, column=0, sticky="w", pady=2)
         self.task_time_entry = tk.Entry(input_frame, width=10)
         self.task_time_entry.grid(row=1, column=1, sticky="w", padx=5, pady=2)
         
         self.priority_var = tk.BooleanVar()
-        tk.Checkbutton(input_frame, text="High Priority (!)", variable=self.priority_var).grid(row=2, column=0, sticky="w", pady=5)
+        tk.Checkbutton(input_frame, text="High Priority?", variable=self.priority_var).grid(row=2, column=0, sticky="w", pady=5)
         
         self.type_var = tk.StringVar(value="need")
         tk.Radiobutton(input_frame, text="Need to do", variable=self.type_var, value="need").grid(row=3, column=0, sticky="w")
@@ -153,7 +152,8 @@ class TimeManagementApp:
             
         response = messagebox.askyesno(
             "Confirm Clear",
-            "WARNING: This will DELETE all tasks within the task window\n(You may want to save before proceeding!)\nDo you want to proceed?"
+            """WARNING: This will DELETE all tasks within the task window\n
+You may want to save before proceeding!)\nDo you want to proceed?"""
         )
         
         if response:
@@ -175,7 +175,7 @@ class TimeManagementApp:
         # Find the index of the first matching task
         target_list = self.needs if task_type == 'need' else self.wants
         try:
-            index_to_remove = next(i for i, item in enumerate(target_list) if is_match(item, task_to_remove))
+            index_to_remove=next(i for i, item in enumerate(target_list) if is_match(item, task_to_remove))
             del target_list[index_to_remove]
         except StopIteration:
             # Should not happen if called correctly, but handles case where task is missing
@@ -221,13 +221,13 @@ class TimeManagementApp:
         tk.Entry(edit_frame, width=25, textvariable=edit_name_var).grid(row=0, column=1, padx=5, pady=5)
         
         # Time
-        tk.Label(edit_frame, text="Time (mins 1-300):").grid(row=1, column=0, sticky="w", pady=2)
+        tk.Label(edit_frame, text="Time (mins):").grid(row=1, column=0, sticky="w", pady=2)
         edit_time_var = tk.StringVar(value=str(task['time']))
         tk.Entry(edit_frame, width=10, textvariable=edit_time_var).grid(row=1, column=1, sticky="w", padx=5, pady=2)
         
         # Priority
         edit_priority_var = tk.BooleanVar(value=task['priority'])
-        tk.Checkbutton(edit_frame, text="High Priority (!)", variable=edit_priority_var).grid(row=2, column=0, sticky="w", pady=5)
+        tk.Checkbutton(edit_frame, text="High Priority?", variable=edit_priority_var).grid(row=2, column=0, sticky="w", pady=5)
         
         # Type (Need/Want)
         edit_type_var = tk.StringVar(value=task['type'])
